@@ -51,6 +51,12 @@ README.md
    python -m dave_the_robot.main --platform=pc
    ```
 
+If you want guided instructions printed in the terminal, run:
+
+```powershell
+python -m dave_the_robot.main --plan=run-pc
+```
+
 ### PC mode controls
 
 - On-screen buttons: **Feed**, **Play**, **Sleep**
@@ -75,6 +81,12 @@ README.md
    python3 -m dave_the_robot.main --platform=pi
    ```
 
+For a guided Pi checklist, run:
+
+```bash
+python3 -m dave_the_robot.main --plan=run-pi
+```
+
 ## Configuration and customization
 
 - Edit `dave_the_robot/config.py`:
@@ -85,6 +97,16 @@ README.md
   - a unique `face_id`
   - a condition function
   - a render function using drawing primitives
+
+## Built-in step-by-step plans
+
+You can ask the app to print actionable plans:
+
+- `python -m dave_the_robot.main --plan=run-pc`
+- `python -m dave_the_robot.main --plan=run-pi`
+- `python -m dave_the_robot.main --plan=change-buttons`
+- `python -m dave_the_robot.main --plan=add-face`
+- `python -m dave_the_robot.main --plan=tune-pet`
 
 ## Notes
 

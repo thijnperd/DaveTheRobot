@@ -9,6 +9,7 @@ import time
 from dave_the_robot.config import STATE_UPDATE_SECONDS, TICK_SECONDS
 from dave_the_robot.core.faces import FaceEngine
 from dave_the_robot.core.pet import VirtualPet
+from dave_the_robot.plan import available_plan_ids, render_plan
 
 
 def parse_args() -> argparse.Namespace:
@@ -18,6 +19,11 @@ def parse_args() -> argparse.Namespace:
         choices=["pc", "pi"],
         default=os.getenv("DAVE_PLATFORM", "pc"),
         help="Runtime platform: pc (pygame simulator) or pi (ST7789 + GPIO buttons)",
+    )
+    parser.add_argument(
+        "--plan",
+        choices=available_plan_ids(),
+        help="Print a step-by-step plan for common tasks and exit",
     )
     return parser.parse_args()
 
@@ -69,6 +75,9 @@ def run(platform_name: str) -> None:
 
 def main() -> None:
     args = parse_args()
+    if args.plan:
+        print(render_plan(args.plan))
+        return
     run(args.platform)
 
 
