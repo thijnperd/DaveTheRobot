@@ -29,6 +29,7 @@ class PCDisplay:
         self.canvas = pygame.Surface((SCREEN_SIZE, SCREEN_SIZE))
         self.clock = pygame.time.Clock()
         self.font_cache: dict[int, pygame.font.Font] = {}
+        self.image_cache: dict[str, pygame.Surface] = {}
 
         self.buttons = [
             ButtonWidget("feed", "Feed (F)", pygame.Rect(290, 40, 180, 56)),
@@ -52,6 +53,17 @@ class PCDisplay:
         font = self._get_font(size)
         glyph = font.render(text, True, color)
         self.canvas.blit(glyph, position)
+
+    def draw_image(
+        self,
+        image_path: str,
+        position: tuple[int, int],
+        size: tuple[int, int] | None = None,
+    ) -> None:
+        image = self._get_image(image_path)
+        if size is not None:
+            image = pygame.transform.smoothscale(image, size)
+        self.canvas.blit(image, position)
 
     def present(self, state: PetState, active_face: str) -> None:
         self.window.fill((28, 31, 37))
@@ -96,3 +108,8 @@ class PCDisplay:
         if size not in self.font_cache:
             self.font_cache[size] = pygame.font.SysFont("consolas", size)
         return self.font_cache[size]
+
+    def _get_image(self, image_path: str) -> pygame.Surface:
+        if image_path not in self.image_cache:
+            self.image_cache[image_path] = pygame.image.load(image_path).convert_alpha()
+        return self.image_cache[image_path]

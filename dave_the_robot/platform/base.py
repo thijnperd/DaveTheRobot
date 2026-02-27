@@ -34,6 +34,14 @@ class Display(Protocol):
     def draw_text(self, text: str, position: tuple[int, int], color: Color, size: int = 16) -> None:
         ...
 
+    def draw_image(
+        self,
+        image_path: str,
+        position: tuple[int, int],
+        size: tuple[int, int] | None = None,
+    ) -> None:
+        ...
+
     def present(self, state: PetState, active_face: str) -> None:
         ...
 

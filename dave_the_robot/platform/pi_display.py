@@ -47,6 +47,7 @@ class PiDisplay:
         self.image = Image.new("RGB", (self.width, self.height))
         self.draw = ImageDraw.Draw(self.image)
         self.font_cache: dict[int, Any] = {}
+        self.image_cache: dict[str, Image.Image] = {}
 
     def clear(self, color: Color) -> None:
         self.draw.rectangle((0, 0, self.width, self.height), fill=color)
@@ -74,6 +75,17 @@ class PiDisplay:
         font = self._get_font(size)
         self.draw.text(position, text, fill=color, font=font)
 
+    def draw_image(
+        self,
+        image_path: str,
+        position: tuple[int, int],
+        size: tuple[int, int] | None = None,
+    ) -> None:
+        sprite = self._get_image(image_path)
+        if size is not None:
+            sprite = sprite.resize(size)
+        self.image.paste(sprite, position)
+
     def present(self, state: PetState, active_face: str) -> None:
         self.disp.image(self.image)
 
@@ -81,3 +93,8 @@ class PiDisplay:
         if size not in self.font_cache:
             self.font_cache[size] = ImageFont.load_default()
         return self.font_cache[size]
+
+    def _get_image(self, image_path: str) -> Image.Image:
+        if image_path not in self.image_cache:
+            self.image_cache[image_path] = Image.open(image_path).convert("RGB")
+        return self.image_cache[image_path]

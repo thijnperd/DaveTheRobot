@@ -12,6 +12,7 @@ dave_the_robot/
   __init__.py
   config.py
   main.py
+  plan.py
   core/
     pet.py
     faces.py
@@ -22,6 +23,11 @@ dave_the_robot/
     pi_display.py
     pi_input.py
 assets/
+  faces/
+    calm.png
+    angry.png
+    sad.png
+    excited.png
 requirements.txt
 README.md
 ```
@@ -34,6 +40,17 @@ README.md
 - `platform/` contains adapters:
   - `Display`-style drawing primitives are implemented by PC and Pi display classes.
   - `Input` adapters return logical button events so core logic never touches GPIO directly.
+
+## Face set and logical purpose
+
+The app now supports sprite faces in `assets/faces/` and falls back to vector drawing if sprite files are missing.
+
+- `angry.png`: shows when `hunger >= 80` (critical hunger warning).
+- `sad.png`: shows when `happiness <= 30` (attention/play needed).
+- `calm.png`: shows when energy and hunger are balanced (`energy >= 65` and `hunger <= 60`).
+- `excited.png`: default happy gameplay state.
+
+This mapping makes the face immediately communicate what action the player should take next.
 
 ## Install (Windows 10 / PC mode)
 
@@ -96,7 +113,7 @@ python3 -m dave_the_robot.main --plan=run-pi
 - Add new expressions in `dave_the_robot/core/faces.py` by creating new `Face(...)` entries with:
   - a unique `face_id`
   - a condition function
-  - a render function using drawing primitives
+  - a render function using drawing primitives or sprite files
 
 ## Built-in step-by-step plans
 
