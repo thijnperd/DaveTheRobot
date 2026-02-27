@@ -7,7 +7,6 @@ from typing import Any
 from PIL import Image, ImageDraw, ImageFont
 
 from dave_the_robot.config import SCREEN_SIZE
-from dave_the_robot.core.pet import PetState
 from dave_the_robot.platform.base import Color
 
 
@@ -86,7 +85,7 @@ class PiDisplay:
             sprite = sprite.resize(size)
         self.image.paste(sprite, position)
 
-    def present(self, state: PetState, active_face: str) -> None:
+    def present(self, state: object | None, active_face: str) -> None:
         self.disp.image(self.image)
 
     def _get_font(self, size: int) -> ImageFont.ImageFont:

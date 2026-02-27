@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol
 
-from dave_the_robot.core.pet import PetState
 
 Color = tuple[int, int, int]
 
@@ -42,7 +41,7 @@ class Display(Protocol):
     ) -> None:
         ...
 
-    def present(self, state: PetState, active_face: str) -> None:
+    def present(self, state: object | None, active_face: str) -> None:
         ...
 
 

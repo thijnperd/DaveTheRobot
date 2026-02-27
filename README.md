@@ -1,131 +1,141 @@
-# DaveTheRobot
+# DaveTheRobot / DaveOS
 
-A small cross-platform virtual pet app designed for:
+A lightweight virtual pet project evolved into a tiny embedded-style shell (**DaveOS**) that can run multiple mini-apps.
 
-- **PC mode** (Windows/Linux/macOS): pygame simulator with a 240x240 virtual LCD and clickable buttons.
-- **Pi mode** (Raspberry Pi Zero 2 W): Waveshare 1.3" ST7789 LCD + GPIO buttons.
+## High-level architecture overview
 
-## Project layout
+### 1) Core runtime (`os_core.py`)
+- Handles the main event loop.
+- Loads and switches apps.
+- Provides small shared services through a restricted host API (`launch`, `home`, `get_setting`, `set_setting`, `status`).
+- Keeps runtime settings in memory (`tick_ms`, `max_notes`) to control responsiveness and memory usage.
+
+### 2) Platform adapters (`platform/`)
+- `pc_display.py` / `pc_input.py`: pygame simulator.
+- `pi_display.py` / `pi_input.py`: ST7789 + GPIO adapters.
+- Both implement a common drawing/input interface (`platform/base.py`) so apps remain device-agnostic.
+
+### 3) App modules (`apps/`)
+Each app is a small module implementing:
+- `on_open()`
+- `on_event(event, host)`
+- `render(display, context)`
+
+Built-in apps:
+- `launcher` (home menu)
+- `files` (minimal file manager)
+- `settings` (runtime tuning)
+- `notes` (example app with capped note list)
+
+### 4) Pet mode (`core/`)
+Original pet system remains available as a separate runtime mode (`--system=pet`), while DaveOS shell is default (`--system=os`).
+
+---
+
+## Example code structure (OS core + app)
 
 ```text
 dave_the_robot/
-  __init__.py
-  config.py
-  main.py
-  plan.py
-  core/
-    pet.py
-    faces.py
-  platform/
-    base.py
-    pc_display.py
-    pc_input.py
-    pi_display.py
-    pi_input.py
-assets/
-  faces/
-    calm.png
-    angry.png
-    sad.png
-    excited.png
-requirements.txt
-README.md
+  main.py                # CLI + system/platform selection
+  os_core.py             # MiniOS loop, app host API, app switching
+  apps/
+    base.py              # MiniApp protocol + OSContext
+    launcher.py
+    file_manager.py
+    settings.py
+    notes.py             # example app
+  core/                  # pet mode runtime
+  platform/              # PC/Pi adapters
 ```
 
-## Architecture overview
+### Pseudocode: OS core
 
-- `core/` contains hardware-agnostic logic:
-  - `pet.py`: state model + behavior (`feed`, `play`, `sleep`, periodic decay).
-  - `faces.py`: expression system with condition-based face selection and rendering.
-- `platform/` contains adapters:
-  - `Display`-style drawing primitives are implemented by PC and Pi display classes.
-  - `Input` adapters return logical button events so core logic never touches GPIO directly.
+```python
+while not input.should_quit():
+    events = input.poll()
+    app = apps[current_app]
 
-## Face set and logical purpose
+    for event in events:
+        app.on_event(map_buttons(event), host_api)
 
-The app now supports sprite faces in `assets/faces/` and falls back to vector drawing if sprite files are missing.
+    app.render(display, context)
+    draw_status_bar_if_needed()
+    display.present()
+    sleep(tick_ms)
+```
 
-- `angry.png`: shows when `hunger >= 80` (critical hunger warning).
-- `sad.png`: shows when `happiness <= 30` (attention/play needed).
-- `calm.png`: shows when energy and hunger are balanced (`energy >= 65` and `hunger <= 60`).
-- `excited.png`: default happy gameplay state.
+### Pseudocode: example app (Notes)
 
-This mapping makes the face immediately communicate what action the player should take next.
+```python
+on_event(event):
+    if event == "select":
+        notes.append(new_timestamped_note())
+        notes = notes[-max_notes:]  # ring-buffer-like cap
+    elif event == "up":
+        selected = next_index()
+    elif event == "back":
+        host.home()
+```
 
-## Install (Windows 10 / PC mode)
+---
 
-1. Create a venv (recommended):
-   ```powershell
-   py -m venv .venv
-   .\.venv\Scripts\activate
-   ```
-2. Install dependencies:
-   ```powershell
-   pip install -r requirements.txt
-   ```
-3. Run in PC mode:
-   ```powershell
-   python -m dave_the_robot.main --platform=pc
-   ```
+## Resource-constrained design notes
 
-If you want guided instructions printed in the terminal, run:
+To stay efficient on Pi Zero 2 W:
+- Keep app state in small Python structures (lists/dicts), no heavy frameworks.
+- Avoid recursive scans; file manager lists only a small bounded subset.
+- Reuse display assets via small in-memory caches (avoid repeated decode).
+- Use coarse tick timing (`tick_ms`) rather than high-FPS loops.
+- Cap user-generated data (`max_notes`) to avoid unbounded growth.
+- Keep IPC simple: direct host method calls instead of background workers.
+
+Expansion strategy under constraints:
+1. Add one app at a time with strict memory caps.
+2. Keep app APIs minimal (event in, draw out).
+3. Use lazy loading for data-heavy features.
+4. Prefer text/primitive UI before sprites/animations.
+5. Add persistence carefully (small JSON files, bounded size).
+
+---
+
+## Run (Windows 10 / PC)
 
 ```powershell
-python -m dave_the_robot.main --plan=run-pc
+py -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+python -m dave_the_robot.main --system=os --platform=pc
 ```
 
-### PC mode controls
+Controls (PC):
+- `F` = UP
+- `P` = SELECT
+- `S` = BACK
+- `Esc` = quit
 
-- On-screen buttons: **Feed**, **Play**, **Sleep**
-- Keyboard shortcuts: `F`, `P`, `S`
-- `Esc` or window close button exits
+Pet mode (legacy runtime):
 
-## Install (Raspberry Pi Zero 2 W / Pi mode)
+```powershell
+python -m dave_the_robot.main --system=pet --platform=pc
+```
 
-1. Install base dependencies:
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
-2. Install Pi-specific dependencies:
-   ```bash
-   pip install adafruit-circuitpython-rgb-display gpiozero RPi.GPIO
-   ```
-3. Enable SPI on your Pi (`raspi-config` -> Interface Options -> SPI).
-4. Run in Pi mode:
-   ```bash
-   python3 -m dave_the_robot.main --platform=pi
-   ```
-
-For a guided Pi checklist, run:
+## Run (Pi)
 
 ```bash
-python3 -m dave_the_robot.main --plan=run-pi
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install adafruit-circuitpython-rgb-display gpiozero RPi.GPIO
+python3 -m dave_the_robot.main --system=os --platform=pi
 ```
 
-## Configuration and customization
+## Built-in plans
 
-- Edit `dave_the_robot/config.py`:
-  - `DEFAULT_PI_BUTTON_PINS` to match your exact Waveshare HAT button wiring.
-  - `STATE_UPDATE_SECONDS` and `TICK_SECONDS` for game speed.
-- Tweak behavior in `dave_the_robot/core/pet.py`.
-- Add new expressions in `dave_the_robot/core/faces.py` by creating new `Face(...)` entries with:
-  - a unique `face_id`
-  - a condition function
-  - a render function using drawing primitives or sprite files
-
-## Built-in step-by-step plans
-
-You can ask the app to print actionable plans:
-
-- `python -m dave_the_robot.main --plan=run-pc`
-- `python -m dave_the_robot.main --plan=run-pi`
-- `python -m dave_the_robot.main --plan=change-buttons`
-- `python -m dave_the_robot.main --plan=add-face`
-- `python -m dave_the_robot.main --plan=tune-pet`
-
-## Notes
-
-- Pi display defaults in `pi_display.py` target a common ST7789 setup; adjust CS/DC/RST pins if needed for your board.
-- This is an initial framework intended to be easy to extend with sprites, animations, and additional actions.
+```bash
+python -m dave_the_robot.main --plan=run-os
+python -m dave_the_robot.main --plan=run-pc
+python -m dave_the_robot.main --plan=run-pi
+python -m dave_the_robot.main --plan=change-buttons
+python -m dave_the_robot.main --plan=add-face
+python -m dave_the_robot.main --plan=tune-pet
+```

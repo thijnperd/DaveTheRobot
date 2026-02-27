@@ -7,7 +7,6 @@ from dataclasses import dataclass
 import pygame
 
 from dave_the_robot.config import SCREEN_SIZE
-from dave_the_robot.core.pet import PetState
 from dave_the_robot.platform.base import Color
 
 
@@ -65,7 +64,7 @@ class PCDisplay:
             image = pygame.transform.smoothscale(image, size)
         self.canvas.blit(image, position)
 
-    def present(self, state: PetState, active_face: str) -> None:
+    def present(self, state: object | None, active_face: str) -> None:
         self.window.fill((28, 31, 37))
 
         self.window.blit(self.canvas, (20, 20))
@@ -85,12 +84,16 @@ class PCDisplay:
             txt_rect = txt.get_rect(center=button.rect.center)
             self.window.blit(txt, txt_rect)
 
-    def _draw_status(self, state: PetState, active_face: str) -> None:
+    def _draw_status(self, state: object | None, active_face: str) -> None:
         base_y = 276
-        lines = [
-            f"Face: {active_face}",
-            f"Hunger: {state.hunger:3d}   Happiness: {state.happiness:3d}   Energy: {state.energy:3d}",
-        ]
+        lines = [f"Screen: {active_face}"]
+
+        if state is not None and all(hasattr(state, attr) for attr in ("hunger", "happiness", "energy")):
+            lines.append(
+                f"Hunger: {state.hunger:3d}   Happiness: {state.happiness:3d}   Energy: {state.energy:3d}"
+            )
+        else:
+            lines.append("F=UP  P=SELECT  S=BACK")
         for i, line in enumerate(lines):
             txt = self._get_font(18).render(line, True, (225, 225, 225))
             self.window.blit(txt, (20, base_y + i * 26))

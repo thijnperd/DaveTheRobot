@@ -1,4 +1,4 @@
-"""Entry point for Dave the Robot virtual pet."""
+"""Entry point for Dave the Robot virtual pet and mini OS runtime."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ import time
 from dave_the_robot.config import STATE_UPDATE_SECONDS, TICK_SECONDS
 from dave_the_robot.core.faces import FaceEngine
 from dave_the_robot.core.pet import VirtualPet
+from dave_the_robot.os_core import MiniOS
 from dave_the_robot.plan import available_plan_ids, render_plan
 
 
@@ -19,6 +20,12 @@ def parse_args() -> argparse.Namespace:
         choices=["pc", "pi"],
         default=os.getenv("DAVE_PLATFORM", "pc"),
         help="Runtime platform: pc (pygame simulator) or pi (ST7789 + GPIO buttons)",
+    )
+    parser.add_argument(
+        "--system",
+        choices=["os", "pet"],
+        default=os.getenv("DAVE_SYSTEM", "os"),
+        help="Runtime system: os (multi-app shell) or pet (single virtual pet)",
     )
     parser.add_argument(
         "--plan",
@@ -46,7 +53,7 @@ def make_platform(platform_name: str):
     return display, controls, closer
 
 
-def run(platform_name: str) -> None:
+def run_pet(platform_name: str) -> None:
     pet = VirtualPet()
     face_engine = FaceEngine()
     display, controls, closer = make_platform(platform_name)
@@ -73,12 +80,27 @@ def run(platform_name: str) -> None:
             closer()
 
 
+def run_os(platform_name: str) -> None:
+    display, controls, closer = make_platform(platform_name)
+    os_shell = MiniOS(display=display, controls=controls)
+    try:
+        os_shell.run()
+    finally:
+        if closer is not None:
+            closer()
+
+
 def main() -> None:
     args = parse_args()
     if args.plan:
         print(render_plan(args.plan))
         return
-    run(args.platform)
+
+    if args.system == "pet":
+        run_pet(args.platform)
+        return
+
+    run_os(args.platform)
 
 
 if __name__ == "__main__":

@@ -13,13 +13,23 @@ class Plan:
 
 
 PLANS: dict[str, Plan] = {
-    "run-pc": Plan(
-        plan_id="run-pc",
-        title="Run DaveTheRobot on your PC",
+    "run-os": Plan(
+        plan_id="run-os",
+        title="Run DaveOS mini shell on your PC",
         steps=[
             "Create and activate a Python virtual environment.",
             "Install dependencies with: pip install -r requirements.txt",
-            "Start the simulator with: python -m dave_the_robot.main --platform=pc",
+            "Start shell with: python -m dave_the_robot.main --system=os --platform=pc",
+            "Use F/P/S as UP/SELECT/BACK to navigate apps.",
+        ],
+    ),
+    "run-pc": Plan(
+        plan_id="run-pc",
+        title="Run DaveTheRobot pet mode on your PC",
+        steps=[
+            "Create and activate a Python virtual environment.",
+            "Install dependencies with: pip install -r requirements.txt",
+            "Start pet mode with: python -m dave_the_robot.main --system=pet --platform=pc",
             "Use Feed/Play/Sleep buttons (or F/P/S keys) to interact.",
         ],
     ),
@@ -32,7 +42,7 @@ PLANS: dict[str, Plan] = {
             "Install dependencies: pip install -r requirements.txt",
             "Install Pi-only libs: pip install adafruit-circuitpython-rgb-display gpiozero RPi.GPIO",
             "Verify button pin mapping in dave_the_robot/config.py.",
-            "Run: python3 -m dave_the_robot.main --platform=pi",
+            "Run shell: python3 -m dave_the_robot.main --system=os --platform=pi",
         ],
     ),
     "change-buttons": Plan(
@@ -52,9 +62,9 @@ PLANS: dict[str, Plan] = {
             "Open dave_the_robot/core/faces.py.",
             "Add a new render_<name>(display, state) function using draw primitives.",
             "Add a Face(...) entry to DEFAULT_FACES with a condition and face_id.",
-            "Place your new face above the default happy fallback in DEFAULT_FACES.",
+            "Place your new face above the default excited fallback in DEFAULT_FACES.",
             "Run python -m compileall dave_the_robot to verify syntax.",
-            "Run pc mode and validate the new face triggers under expected stats.",
+            "Run pet mode and validate the new face triggers under expected stats.",
         ],
     ),
     "tune-pet": Plan(
@@ -65,7 +75,7 @@ PLANS: dict[str, Plan] = {
             "Adjust action values in apply_action() for feed/play/sleep.",
             "Adjust decay in time_step() to control game pacing.",
             "Optionally adjust STATE_UPDATE_SECONDS in config.py.",
-            "Run in pc mode and test interactions for balance.",
+            "Run in pet mode and test interactions for balance.",
         ],
     ),
 }
