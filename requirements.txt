@@ -1,0 +1,7 @@
+pygame>=2.5
+Pillow>=10.0
+
+# Raspberry Pi-only dependencies (install on Pi as needed):
+# adafruit-circuitpython-rgb-display
+# gpiozero
+# RPi.GPIO
