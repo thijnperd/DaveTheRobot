@@ -1,6 +1,6 @@
 # DaveTheRobot / DaveOS
 
-A lightweight virtual pet project evolved into a tiny embedded-style shell (**DaveOS**) that can run multiple mini-apps.
+A lightweight virtual pet project with a desktop pet runtime by default, plus an optional tiny embedded-style shell (**DaveOS**) for multiple mini-apps.
 
 ## High-level architecture overview
 
@@ -28,7 +28,7 @@ Built-in apps:
 - `notes` (example app with capped note list)
 
 ### 4) Pet mode (`core/`)
-Original pet system remains available as a separate runtime mode (`--system=pet`), while DaveOS shell is default (`--system=os`).
+Desktop pet mode is the default runtime (`--system=pet`), and DaveOS shell is available with `--system=os`.
 
 ---
 
@@ -104,7 +104,7 @@ Expansion strategy under constraints:
 py -m venv .venv
 .\.venv\Scripts\activate
 pip install -r requirements.txt
-python -m dave_the_robot.main --system=os --platform=pc
+python -m dave_the_robot.main --platform=pc
 ```
 
 Controls (PC):
@@ -113,10 +113,10 @@ Controls (PC):
 - `S` = BACK
 - `Esc` = quit
 
-Pet mode (legacy runtime):
+DaveOS mode (optional):
 
 ```powershell
-python -m dave_the_robot.main --system=pet --platform=pc
+python -m dave_the_robot.main --system=os --platform=pc
 ```
 
 ## Run (Pi)
@@ -126,14 +126,14 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 pip install adafruit-circuitpython-rgb-display gpiozero RPi.GPIO
-python3 -m dave_the_robot.main --system=os --platform=pi
+python3 -m dave_the_robot.main --system=pet --platform=pi
 ```
 
 ## Built-in plans
 
 ```bash
-python -m dave_the_robot.main --plan=run-os
 python -m dave_the_robot.main --plan=run-pc
+python -m dave_the_robot.main --plan=run-os
 python -m dave_the_robot.main --plan=run-pi
 python -m dave_the_robot.main --plan=change-buttons
 python -m dave_the_robot.main --plan=add-face

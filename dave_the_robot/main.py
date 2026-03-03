@@ -24,8 +24,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--system",
         choices=["os", "pet"],
-        default=os.getenv("DAVE_SYSTEM", "os"),
-        help="Runtime system: os (multi-app shell) or pet (single virtual pet)",
+        default=os.getenv("DAVE_SYSTEM", "pet"),
+        help="Runtime system: pet (desktop virtual pet) or os (multi-app shell)",
     )
     parser.add_argument(
         "--plan",

@@ -35,14 +35,14 @@ PLANS: dict[str, Plan] = {
     ),
     "run-pi": Plan(
         plan_id="run-pi",
-        title="Run DaveTheRobot on Raspberry Pi",
+        title="Run DaveTheRobot pet mode on Raspberry Pi",
         steps=[
             "Enable SPI in raspi-config (Interface Options -> SPI).",
             "Create and activate a virtual environment.",
             "Install dependencies: pip install -r requirements.txt",
             "Install Pi-only libs: pip install adafruit-circuitpython-rgb-display gpiozero RPi.GPIO",
             "Verify button pin mapping in dave_the_robot/config.py.",
-            "Run shell: python3 -m dave_the_robot.main --system=os --platform=pi",
+            "Run pet mode: python3 -m dave_the_robot.main --system=pet --platform=pi",
         ],
     ),
     "change-buttons": Plan(
